@@ -1,0 +1,140 @@
+---1. Marinheiros que reservaram pelo menos um barco:---
+SELECT DISTINCT m.nome
+FROM marinheiros m
+         JOIN reservas r ON m.id_marinheiro = r.id_marinheiro;
+
+---2. Cor dos barcos reservados por marinheiros Lubber:---
+SELECT DISTINCT b.cor
+FROM barcos b
+         JOIN reservas r ON b.id_barco = r.id_barco
+         JOIN marinheiros m ON r.id_marinheiro = m.id_marinheiro
+WHERE m.nome = 'Lubber';
+
+---3. Nome dos marinheiros que reservaram o barco com o nome 'Black Pearl':---
+SELECT DISTINCT m.nome
+FROM marinheiros m
+         JOIN reservas r ON m.id_marinheiro = r.id_marinheiro
+WHERE r.id_barco = 103;
+
+---4. Cor dos barcos reservados pelo marinheiro Bob:---
+SELECT DISTINCT b.cor
+FROM barcos b
+         JOIN reservas r ON b.id_barco = r.id_barco
+         JOIN marinheiros m ON r.id_marinheiro = m.id_marinheiro
+WHERE m.nome = 'Bob';
+
+---5. id_marinheiro dos marinheiros que têm classificação 10 ou que reservaram o barco com id 104:---
+SELECT id_marinheiro
+FROM marinheiros
+WHERE classificacao = 10
+UNION
+SELECT id_marinheiro
+FROM reservas
+WHERE id_barco = 104;
+
+---6. Nome dos marinheiros que reservaram barcos verdes e vermelhos:---
+SELECT m.nome
+FROM marinheiros m
+         JOIN reservas r ON m.id_marinheiro = r.id_marinheiro
+         JOIN barcos b ON r.id_barco = b.id_barco
+WHERE lower(b.cor) = 'verde'
+INTERSECT
+SELECT m.nome
+FROM marinheiros m
+         JOIN reservas r ON m.id_marinheiro = r.id_marinheiro
+         JOIN barcos b ON r.id_barco = b.id_barco
+WHERE lower(b.cor) = 'vermelho';
+
+--7. id_marinheiro dos marinheiros que reservaram barcos vermelhos mas não verdes:---
+
+SELECT r.id_marinheiro
+FROM reservas r
+         JOIN barcos b ON r.id_barco = b.id_barco
+WHERE b.cor = 'vermelho'
+MINUS
+SELECT r.id_marinheiro
+FROM reservas r
+         JOIN barcos b ON r.id_barco = b.id_barco
+WHERE b.cor = 'verde';
+
+---8. Nome dos marinheiros que não reservaram 1 barco ---
+SELECT m.nome
+FROM marinheiros m
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM reservas r
+    WHERE r.id_marinheiro = m.id_marinheiro);
+
+---9. id,nome e idade dos marinheiros mais velhos ---
+SELECT id_marinheiro, nome, idade FROM marinheiros
+WHERE idade = (SELECT MAX(idade) FROM marinheiros);
+
+---10. id, nome de marinheiros sem reservas de barcos, com subquery nao correlacionada como operando de 'NOT IN' na cláusula WHERE---
+SELECT id_marinheiro, nome FROM marinheiros
+WHERE id_marinheiro NOT IN (SELECT id_marinheiro FROM reservas);
+
+---11. id, nome, diferença de idade para a média de idade dos marinheiros , para todos os marinheiros---
+SELECT id_marinheiro, nome, idade - trunc((SELECT AVG(idade) FROM marinheiros),0) as diferenca_idade_media
+FROM marinheiros;
+
+---12. numero total de marinheiros que reservaram barcos vermelhos e verdes---
+SELECT COUNT(*) as total_marinheiros FROM
+(select m.id_marinheiro from MARINHEIROS m where exists
+    (select 1 from RESERVAS r join BARCOS b on b.ID_BARCO=r.ID_BARCO where r.id_marinheiro = m.id_marinheiro and lower(b.COR)='vermelho')
+                                           and exists(select 1 from RESERVAS r join BARCOS b on b.ID_BARCO=r.ID_BARCO where r.id_marinheiro = m.id_marinheiro and lower(b.COR)='verde'));
+---13. datas com mais reservas de barcos ---
+SELECT r.DATA FROM reservas r
+group by r.DATA
+having count(r.ID_BARCO) = (select max(total_reservas) from (select count(r.ID_BARCO) as total_reservas from reservas r group by r.DATA));
+
+---14. como o 13, mas com uma subquery nao correlacionada de condicao ALL na clausula WHERE---
+SELECT distinct r.DATA FROM reservas r
+WHERE (select count(r2.ID_BARCO) from reservas r2 where r2.DATA = r.DATA) >= ALL (select count(r3.ID_BARCO) as total_reservas from reservas r3 group by r3.DATA);
+
+---15. id, nome e idade de marinheiros que não são os mais velhos ---
+SELECT id_marinheiro, nome, idade FROM marinheiros
+WHERE idade < (SELECT MAX(idade) FROM marinheiros);
+
+---16.Mostrar o id, o nome e o número total de reservas de barcos dos marinheiros, por ordem decrescente do número total de reservas (Figura 8). O comando deve usar uma SC como “coluna”, na cláusula SELECT---
+SELECT distinct m.id_marinheiro, m.nome, (SELECT COUNT(*) FROM reservas r WHERE r.id_marinheiro = m.id_marinheiro) as total_reservas
+FROM marinheiros m;
+
+---17. Mostrar o id dos marinheiros cujo número total de reservas de um barco seja superior ao número médio de reservas desse barco (Figura 9).
+-- Além disso, o resultado deve também incluir o id do barco e o número total de reservas, respetivos. O comando deve usar uma SC como “operando”
+-- de um operador relacional, na cláusula HAVING.---
+
+SELECT r.id_marinheiro, r.id_barco, COUNT(*) AS total_reservas
+FROM RESERVAS r
+GROUP BY r.id_marinheiro, r.id_barco
+HAVING COUNT(*) > (
+    SELECT AVG(sub.total_reservas)
+    FROM (
+             SELECT COUNT(*) AS total_reservas
+             FROM RESERVAS r2
+             WHERE r2.id_barco = r.id_barco
+             GROUP BY r2.id_marinheiro
+         ) sub
+);
+
+---18. nome de marinheiros que reservaram todos os barcos de nome Interlake---
+SELECT m.nome
+FROM marinheiros m
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM barcos b
+    WHERE b.nome = 'Interlake'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM reservas r
+        WHERE r.id_marinheiro = m.id_marinheiro
+          AND r.id_barco = b.id_barco
+    )
+);
+
+
+
+
+
+
+
+
