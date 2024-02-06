@@ -1,0 +1,96 @@
+---1. Mostrar o nome de todos os médicos e, no caso dos médicos subordinados, o nome do respetivo médico chefe. O resultado deve ser apresentado por ordem alfabética do primeiro nome referido anteriormente. Para os médicos que são chefes deverá substituir o valor NULL por outro valor.---
+select distinct m.nome, (case when m.id_medico_chefe IS NOT NULL THEN TO_CHAR(m.id_medico_chefe) ELSE 'Sem Chefe' END)
+FROM MEDICOS m
+order by substr(m.NOME,1,INSTR(m.NOME,' ')-1);
+
+--- 2. Nome de médicos com consultas 4-5-2010, ordem alfabética do nome dos médicos ---
+select distinct m.nome from medicos m join consultas c on c.ID_MEDICO=m.ID_MEDICO
+where c.DATA_HORA<timestamp '2010-05-04 00:00:00'
+group by m.nome
+having count(c.ID_CONSULTA)>=1
+order by m.NOME;
+
+--- 3. Nome, designação especialidade e localidade dos Médicos do Hospital São João---
+select distinct m.nome, e.designacao, cp.localidade from medicos m
+join especialidades e on e.ID_ESPECIALIDADE=m.ID_ESPECIALIDADE
+join CODIGOS_POSTAIS cp on m.COD_POSTAL=cp.COD_POSTAL
+where m.HOSPITAL='S�o Jo�o'
+order by m.nome;
+
+--- 4. Nome de Médicos cujo numero total de medicamentos prescritos é superior a 5---
+select distinct m.nome from medicos m join consultas c on c.ID_MEDICO=m.ID_MEDICO
+                                      join medicamentos_receitados mr on mr.ID_CONSULTA=c.ID_CONSULTA
+group by m.nome
+having count(mr.ID_MEDICAMENTO)>5
+order by m.NOME;
+
+--- 5. Nome de Medicamentos mais receitados por ordem alfabética do nome dos medicamentos ---
+select distinct med.nome from MEDICAMENTOS med join medicamentos_receitados mr on mr.ID_MEDICAMENTO=med.ID_MEDICAMENTO
+group by med.nome, mr.ID_MEDICAMENTO
+having count(mr.ID_MEDICAMENTO)>= all (select count(mr1.id_medicamento) from medicamentos_receitados mr1 group by mr1.ID_MEDICAMENTO)
+order by med.nome;
+
+
+---6. Nome e idade dos paciente com mais de 10 anos que nunca tiveram consultas de oftalmologia---
+SELECT DISTINCT p.nome,
+                (CASE
+                     WHEN EXTRACT(MONTH FROM p.DATA_NASCIMENTO) > EXTRACT(MONTH FROM CURRENT_TIMESTAMP)
+                         OR (EXTRACT(MONTH FROM p.DATA_NASCIMENTO) = EXTRACT(MONTH FROM CURRENT_TIMESTAMP)
+                             AND EXTRACT(DAY FROM p.DATA_NASCIMENTO) > EXTRACT(DAY FROM CURRENT_TIMESTAMP))
+                         THEN EXTRACT(YEAR FROM CURRENT_TIMESTAMP) - EXTRACT(YEAR FROM p.DATA_NASCIMENTO)
+                     ELSE EXTRACT(YEAR FROM CURRENT_TIMESTAMP) - EXTRACT(YEAR FROM p.DATA_NASCIMENTO) - 1
+                    END) AS idade
+FROM PACIENTES p
+WHERE NOT EXISTS (SELECT 1
+                  FROM consultas c1
+                           JOIN medicos m1 ON m1.ID_MEDICO = c1.ID_MEDICO
+                           JOIN especialidades e1 ON e1.ID_ESPECIALIDADE = m1.ID_ESPECIALIDADE
+                  WHERE c1.ID_PACIENTE = p.ID_PACIENTE AND e1.DESIGNACAO = 'Oftalmologia')
+  AND (CASE
+           WHEN EXTRACT(MONTH FROM p.DATA_NASCIMENTO) > EXTRACT(MONTH FROM CURRENT_TIMESTAMP)
+               OR (EXTRACT(MONTH FROM p.DATA_NASCIMENTO) = EXTRACT(MONTH FROM CURRENT_TIMESTAMP)
+                   AND EXTRACT(DAY FROM p.DATA_NASCIMENTO) > EXTRACT(DAY FROM CURRENT_TIMESTAMP))
+               THEN EXTRACT(YEAR FROM CURRENT_TIMESTAMP) - EXTRACT(YEAR FROM p.DATA_NASCIMENTO)
+           ELSE EXTRACT(YEAR FROM CURRENT_TIMESTAMP) - EXTRACT(YEAR FROM p.DATA_NASCIMENTO) - 1
+    END) > 10
+GROUP BY p.nome, p.DATA_NASCIMENTO;
+
+---7. Nome e Hospital de médicos de Cardiologia que nunca tiveram consultas entre 1-2-2015 e 31-5-2015---
+select m.nome, m.hospital from medicos m join especialidades e on e.ID_ESPECIALIDADE=m.ID_ESPECIALIDADE
+where e.DESIGNACAO='Cardiologia' and not exists
+    (select 1 from CONSULTAS c1 where c1.DATA_HORA between timestamp '2015-02-01 00:00:00' and timestamp '2015-05-31 23:59:59'
+                                  and c1.ID_MEDICO=m.ID_MEDICO)
+order by m.nome;
+
+---8. Nome dos pacientes que só foram consultados em Pediatria ---
+select p.nome from pacientes p where not exists
+(select 1 from consultas c1 join medicos m1 on m1.ID_MEDICO=c1.ID_MEDICO join especialidades e on m1.ID_ESPECIALIDADE=e.ID_ESPECIALIDADE
+where e.DESIGNACAO!='Pediatria' and c1.ID_PACIENTE=p.ID_PACIENTE)
+order by p.nome;
+
+---9. Nome de paciente e hospital que já foram consultados por todos os médicos do hospital onde foram consultados pela primeira vez---
+select unique p.nome, m.hospital from pacientes p join consultas c on p.ID_PACIENTE=c.ID_PACIENTE
+                                                  join medicos m on c.ID_MEDICO=m.ID_MEDICO
+where not exists
+          (select 1 from medicos m1 where m1.HOSPITAL=m.HOSPITAL and not exists
+              (select 1 from consultas c1 where c1.ID_PACIENTE=p.ID_PACIENTE and c1.ID_MEDICO=m1.ID_MEDICO));
+
+---10. Nome de médicos e hospital onde trabalham cuja localidade é Matosinhos ---
+select unique m.nome, m.hospital from medicos m join especialidades e on e.ID_ESPECIALIDADE=m.ID_ESPECIALIDADE
+                                                join consultas c on c.ID_MEDICO=m.ID_MEDICO join pacientes p on c.ID_PACIENTE=p.ID_PACIENTE
+                                                join codigos_postais cp on p.COD_POSTAL=cp.COD_POSTAL
+where e.DESIGNACAO='Pediatria' and cp.LOCALIDADE='Matosinhos';
+
+---11. Especialidades cujos médicos nunca deram consultas a Alfredo Gama---
+select e.designacao from ESPECIALIDADES e  where not exists
+                                                     (select 1 from medicos m where m.ID_ESPECIALIDADE=e.ID_ESPECIALIDADE and exists(select 1 from consultas c join pacientes p on c.ID_PACIENTE=p.ID_PACIENTE where c.ID_MEDICO=m.ID_MEDICO and p.NOME='Alfredo Gama'))
+order by e.DESIGNACAO;
+
+---12. Nome de médicos que nunca prescreveram 3 ou menos medicamentos numa consulta---
+select distinct m.nome from medicos m where not exists
+                                                (select 1 from consultas c join MEDICAMENTOS_RECEITADOS mr on mr.ID_CONSULTA=c.ID_CONSULTA
+                                                 where c.ID_MEDICO=m.ID_MEDICO
+                                                 group by c.ID_CONSULTA
+                                                 having count(distinct mr.ID_MEDICAMENTO)<=3)
+order by m.NOME
+
