@@ -1,0 +1,83 @@
+---1 Show all data from CD table ---
+SELECT * from CD;
+
+--- 2 Show all data from Musica table ---
+SELECT * from MUSICA
+
+---3. SELECT Titulo and Data de Compra from table CD ---
+SELECT titulo, DATACOMPRA from CD;
+
+---4. SELECT Data de Compra from Table CD ---
+SELECT DATACOMPRA from CD;
+
+---5. Show the same result without repeating entries ---
+SELECT DISTINCT DATACOMPRA from CD;
+
+--- 6. Show cod_cd and their interpretes without repeating entries ---
+SELECT DISTINCT cd.codcd,INTERPRETE  from CD join MUSICA on CD.codcd = MUSICA.codcd;
+
+--- 7. Show the same number as before but the first column is titled "Código do CD" ---
+SELECT DISTINCT cd.codcd as "Código do CD",INTERPRETE  from CD join MUSICA on CD.codcd = MUSICA.codcd;
+
+--- 8. Show the title, the amount paid and the respective VAT value of all CDs. The VAT value is calculated according to the following formula: VAT value = (amount paid * 0.23) / 1.23---
+SELECT TITULO, cd.VALORPAGO, trunc((cd.VALORPAGO * 0.23) / 1.23,2) as "VAT" from CD;
+
+--- 9. Show the title of all the musics in the CD with code 2 ---
+select musica.titulo from musica join cd on CD.CODCD = MUSICA.CODCD where CD.CODCD = 2;
+
+--- 10. Show the title of all the musics in CD with code 2 with duration >5 minutes---
+select musica.titulo from musica join cd on CD.CODCD = MUSICA.CODCD where CD.CODCD = 2 and DURACAO > 5;
+
+---11. Show the titles of CDs bought at FNAC: ---
+SELECT TITULO FROM CD WHERE LOCALCOMPRA = 'FNAC';
+
+---12. Show the title and purchase date of CDs, in alphabetical order of the CD title: ---
+SELECT TITULO FROM CD WHERE LOCALCOMPRA <> 'FNAC';
+
+---13. Show the titles of CDs not bought at FNAC, in reverse alphabetical order: ---
+SELECT TITULO FROM CD WHERE LOCALCOMPRA <> 'FNAC' ORDER BY TITULO DESC;
+
+---14. Show the title and purchase date of CDs, in alphabetical order of the CD title:---
+SELECT TITULO, DATACOMPRA FROM CD ORDER BY TITULO;
+
+---15.Show the title and purchase date of CDs, in descending order of the purchase date:---
+SELECT TITULO, DATACOMPRA FROM CD ORDER BY DATACOMPRA DESC;
+
+---16.Show the title and purchase place of CDs, in ascending order of the purchase place:---
+SELECT TITULO, LOCALCOMPRA FROM CD ORDER BY LOCALCOMPRA;
+
+---17.Show the previous result, but in descending order of the purchase place:---
+SELECT TITULO, LOCALCOMPRA FROM CD ORDER BY LOCALCOMPRA DESC;
+
+---18.Show the title, amount paid, and respective VAT of CDs, in descending order of VAT:---
+SELECT TITULO, VALORPAGO, trunc((VALORPAGO * 0.23) / 1.23, 2) as IVA FROM CD ORDER BY IVA DESC;
+
+---19.Show the number of songs:---
+SELECT COUNT(*) FROM MUSICA;
+
+---20. Show the number of distinct purchase places:---
+SELECT COUNT(DISTINCT LOCALCOMPRA) FROM CD;
+
+---21.Show the total spent on buying all CDs, the highest and lowest amount paid for a CD:---
+SELECT SUM(VALORPAGO) as TotalSpent, MAX(VALORPAGO) as HighestPaid, MIN(VALORPAGO) as LowestPaid FROM CD;
+
+---22. Show the average duration of all songs:---
+SELECT AVG(DURACAO) as AverageDuration FROM MUSICA;
+
+---23. Show the total amount paid at FNAC ---
+SELECT SUM(VALORPAGO) as TotalSpentAtFNAC FROM CD WHERE LOCALCOMPRA = 'FNAC';
+
+---24. Show the difference between the highest and lowest amount paid at FNAC ---
+SELECT MAX(VALORPAGO) - MIN(VALORPAGO) as Difference FROM CD WHERE LOCALCOMPRA = 'FNAC';
+
+---25. Show for each CD and its respective interpreters the number of songs of the CD---
+SELECT CD.CODCD, MUSICA.INTERPRETE, COUNT(MUSICA.NRMUSICA) as "Number of Songs" FROM CD JOIN MUSICA ON CD.CODCD = MUSICA.CODCD GROUP BY CD.CODCD, MUSICA.INTERPRETE;
+
+---26. Show the number of CDs bought at each purchase place---
+SELECT LOCALCOMPRA, COUNT(*) AS NumCDs FROM CD GROUP BY LOCALCOMPRA;
+
+---27. Show the purchase places where the average amount paid per CD is less than 10, along with the total amount paid:---
+SELECT LOCALCOMPRA, AVG(VALORPAGO) AS AvgPaid, SUM(VALORPAGO) AS TotalPaid FROM CD GROUP BY LOCALCOMPRA HAVING AVG(VALORPAGO) < 10;
+
+---28.Show the total amount paid at purchase places where more than 2 CDs were bought, along with the purchase place:
+SELECT LOCALCOMPRA, SUM(VALORPAGO) AS TotalPaid FROM CD GROUP BY LOCALCOMPRA HAVING COUNT(*) > 2;
