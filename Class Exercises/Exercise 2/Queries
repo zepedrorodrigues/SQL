@@ -1,0 +1,48 @@
+---1.Mostrar o título do CD e o título das músicas de todos os CD:---
+---2. Mostrar, numa coluna, o título de cada CD e de cada uma das músicas;---
+2) Copiar e alterar o comando da alínea anterior, de modo a não mostrar os registos repetidos;
+3) Copiar e alterar o comando da alínea anterior, de modo a apresentar também o comprimento de
+cada título e por ordem decrescente;
+4) Mostrar a duração das músicas dos Pink Floyd que são iguais à duração de músicas de outros
+intérpretes;
+5) Alterar o comando da alínea anterior, de modo a mostrar a duração das músicas por ordem
+decrescente;
+6) Mostrar o id das editoras que não estão relacionadas com qualquer CD;
+7) Alterar o comando da alínea anterior, de modo a mostrar o resultado por ordem decrescente.
+4. Criar um script para efetuar, sobre a BD, as seguintes operações:
+BASES DE DADOS
+PRÁTICA-LABORATORIAL:
+SQL DML SELECT - GROUP BY, HAVING, UNION, INTERSECT E MINUS
+2/2
+1) Mostrar a quantidade de CD comprados por local compras. Deve sómente mostrar os registos
+com locais de compra conhecidos ordenados por ordem crescente da quantidade de Cd
+comprados;
+2) Copiar e alterar o comando da alínea anterior, de forma a mostrar também, para cada local de
+compra, o valor total pago e o maior valor pago;
+3) Mostrar, para cada CD e respetivos intérpretes, a quantidade de músicas do CD em que o
+intérprete participa. Além da quantidade referida, também deve ser apresentado o código do CD
+e o intérprete;
+4) Copiar e alterar o comando da alínea anterior, de modo a mostrar apenas, o código do CD e o
+intérprete;
+5) Copiar e alterar o comando da alínea anterior, de modo a mostrar apenas o intérprete;
+6) Mostrar a quantidade de CD comprados em cada local de compra;
+7) Alterar o comando da alínea anterior, de modo a mostrar apenas as quantidades superiores a 2;
+8) Mostrar os locais de compra, cujo média do valor pago por CD é inferior a 10, juntamente com o
+respetivo total do valor pago.
+9) Mostrar o valor total pago nos locais de compra, cuja quantidade de CD comprados é inferior a
+2. O local de compra também deve ser visualizado;
+10) Mostrar o intérprete e o código do CD em que o intérprete participa apenas em 1 música. O
+resultado deve ser apresentado por ordem crescente do código do CD e, em caso de igualdade,
+por ordem alfabética do intérprete;
+11) Copiar e alterar o comando da alínea anterior, de modo a mostrar apenas os intérpretes e sem
+duplicados;
+12) Copiar e alterar o comando da alínea anterior, de modo a mostrar apenas os intérpretes
+começados por E ou L (letras maiúsculas ou minúsculas);
+13) Copiar e alterar o comando da alínea 13 para não mostrar os locais de compra desconhecidos;
+14) Mostrar, para cada CD, o título e a quantidade de músicas;
+15) Mostrar, para cada CD, o código, o título e a quantidade de músicas;
+16) Mostrar, para cada CD, o código, o título e a quantidade de músicas cuja duração é superior a 5;
+17) Mostrar, para cada CD com menos de 6 músicas, o código, o título e a quantidade de músicas do
+CD;
+18) Mostrar, para cada CD cujas músicas têm uma duração média superior a 4, o código, o título e a
+quantidade de músicas do CD.
