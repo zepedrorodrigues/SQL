@@ -1,0 +1,32 @@
+---2. Show all data from the Teams table;---
+SELECT * FROM EQUIPAS;
+---3. Show the id and name of all teams;---
+SELECT ID_EQUIPA, NOME FROM EQUIPAS;
+---4. Show the id, name and age of coaches under 40 years old;---
+SELECT ID_TREINADOR, NOME, IDADE FROM TREINADORES WHERE IDADE < 40;
+---5. Show all data of coaches aged between 45 and 53, in descending order of age;---
+SELECT * FROM TREINADORES WHERE IDADE BETWEEN 45 AND 53 ORDER BY IDADE DESC;
+---6. Show all data of coaches whose name starts with the letter A.---
+SELECT * FROM TREINADORES WHERE NOME LIKE 'A%';
+-- 7.Show the number of teams competing in the championship;---
+SELECT COUNT(ID_EQUIPA) FROM EQUIPAS;
+--- 8.Show the number of coaches over 40 years old;---
+SELECT COUNT(ID_TREINADOR) FROM TREINADORES WHERE IDADE > 40;
+---9.Show the age of the oldest coach.---
+SELECT MAX(IDADE) FROM TREINADORES;
+---10. Show the id of the teams that use Adidas balls;---
+SELECT EQUIPAS.ID_EQUIPA FROM EQUIPAS join BOLAS on BOLAS.ID_EQUIPA=EQUIPAS.ID_EQUIPA where BOLAS.FABRICANTE = 'Adidas';
+---11. Show the result of the previous point, but without repetitions;---
+SELECT DISTINCT EQUIPAS.ID_EQUIPA FROM EQUIPAS join BOLAS on BOLAS.ID_EQUIPA=EQUIPAS.ID_EQUIPA where BOLAS.FABRICANTE = 'Adidas';
+---12. Show all data of coaches who have coached juniors for 5 or more years;---
+SELECT TREINADORES.*
+FROM TREINADORES JOIN EXPERIENCIAS ON TREINADORES.ID_TREINADOR = EXPERIENCIAS.ID_TREINADOR
+WHERE EXPERIENCIAS.ESCALAO = 'juniores'
+GROUP BY TREINADORES.ID_TREINADOR, TREINADORES.NOME, TREINADORES.IDADE, TREINADORES.TELEFONE
+HAVING SUM(EXPERIENCIAS.ANOS) >= 5;
+---13. Show all data of the Académico team and their respective coaches;---
+SELECT DISTINCT EQUIPAS.*, TREINADORES.* FROM EQUIPAS JOIN EXPERIENCIAS ON EQUIPAS.ID_EQUIPA = EXPERIENCIAS.ID_EQUIPA
+JOIN TREINADORES ON EXPERIENCIAS.ID_TREINADOR = TREINADORES.ID_TREINADOR WHERE EQUIPAS.NOME = 'Academico';
+---14. Show the total years of experience of the coach António from Académico.---
+SELECT SUM(EXPERIENCIAS.ANOS) total_experiencia FROM EXPERIENCIAS JOIN TREINADORES ON EXPERIENCIAS.ID_TREINADOR = TREINADORES.ID_TREINADOR
+JOIN EQUIPAS ON EXPERIENCIAS.ID_EQUIPA = EQUIPAS.ID_EQUIPA WHERE TREINADORES.NOME = 'Antonio' AND EQUIPAS.NOME = 'Academico';
