@@ -1,0 +1,55 @@
+---1. id,nome, classificacao de marinheiros, com comentário 'Superior à Média' se tiverem classificação superior à média ---
+SELECT ID_MARINHEIRO, nome, classificacao,
+CASE
+    WHEN classificacao > (SELECT AVG(classificacao) FROM marinheiros) THEN 'Superior à Média'
+    ELSE 'Inferior ou Igual à Média'
+END AS comentario
+FROM marinheiros
+ORDER BY classificacao DESC;
+
+---2. igual com junção de tabelas---
+with media as (SELECT AVG(classificacao) as media FROM marinheiros)
+SELECT m.ID_MARINHEIRO, m.nome, m.classificacao,
+CASE
+    WHEN m.classificacao > media.media THEN 'Superior à Média'
+    ELSE 'Inferior ou Igual à Média'
+END AS comentario
+FROM marinheiros m CROSS JOIN media
+ORDER BY m.classificacao DESC;
+
+---3. marinheiros que reservaram sempre o mesmo barco ---
+select distinct m.nome from MARINHEIROS m join reservas r on m.ID_MARINHEIRO = r.ID_MARINHEIRO
+group by m.nome, r.ID_BARCO
+having count(distinct r.ID_BARCO) = 1 or count(distinct r.ID_BARCO) = 0;
+
+---4. Nome dos barcos reservados por todos os marinheiros com idade igual a 20 anos---
+select distinct b.nome from BARCOS b where not exists
+    (select 1 from MARINHEIROS m
+              where m.id_marinheiro in(select 1.ID_MARINHEIRO from MARINHEIROS m1 where m1.idade = 20)
+              and not exists(select 1 from RESERVAS r where r.ID_BARCO = b.ID_BARCO and r.ID_MARINHEIRO = m.ID_MARINHEIRO));
+
+--- 5. nome dos marinheiros que reservaram pelo menos 2 barcos ---
+select distinct m.nome from MARINHEIROS m join RESERVAS r on m.ID_MARINHEIRO = r.ID_MARINHEIRO
+group by m.nome
+having count(r.ID_BARCO) >= 2;
+
+---6. Nome dos marinheiros com classificação é melhor do que classificação de todos os Horácios---
+select distinct m.nome from MARINHEIROS m where m.classificacao > all(select h.classificacao from MARINHEIROS h where h.nome = 'Hor�cio');
+
+---7. id e nome de marinheiros que reservaram 2 barcos diferentes no mesmo dia ---
+select distinct m.ID_MARINHEIRO, m.nome from MARINHEIROS m join RESERVAS r on m.ID_MARINHEIRO = r.ID_MARINHEIRO
+where exists(select 1 from RESERVAS r1 where r1.ID_MARINHEIRO = m.ID_MARINHEIRO and r1.ID_BARCO != r.ID_BARCO and r1.data = r.data);
+
+---8. Nome e classificação dos marinheiros que têm melhor classificação do que todos os Horácios---
+select distinct m.nome, m.classificacao from MARINHEIROS m where m.classificacao > all(select h.classificacao from MARINHEIROS h where h.nome = 'Hor�cio');
+
+---9. Id barco, idade média dos marinheiros que o reservaram por cada barco reservado por pelo menos 5 marinheiros com idade >=40 anos---
+select distinct r.id_barco, avg(m.idade) as idade_media from RESERVAS r join MARINHEIROS m on r.ID_MARINHEIRO = m.ID_MARINHEIRO
+where exists(select 5 from RESERVAS r1 join marinheiros m1 on m1.ID_MARINHEIRO=r1.ID_MARINHEIRO where r1.ID_BARCO=r.ID_BARCO and m1.idade >= 40)
+group by r.id_barco;
+
+---10. idade marinheiro mais jovem, superior a 18 anos, para cada classificação com pelo menos 2 marinheiros ---
+select classificacao, min(idade) as idade_mais_jovem from MARINHEIROS
+where idade > 18
+group by classificacao
+having count(ID_MARINHEIRO) >= 2;
